@@ -107,4 +107,20 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     }
 
+    /**
+     * set emp status: disable or enable
+     * @param status
+     */
+    @Override
+    public void setStatus(Integer status, Long id) {
+
+        Employee employee = Employee.builder()
+                .id(id)
+                .status(status)
+                .build();
+
+        employeeMapper.updateEmp(employee);
+
+    }
+
 }

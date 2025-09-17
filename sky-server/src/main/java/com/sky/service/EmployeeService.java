@@ -15,7 +15,22 @@ public interface EmployeeService {
      */
     Employee login(EmployeeLoginDTO employeeLoginDTO);
 
+    /**
+     * insert emp into db
+     * @param employeeDTO
+     */
     void saveEmp(EmployeeDTO employeeDTO);
 
+    /**
+     * search emp by name(if has) and display by page
+     * @param employeePageQueryDTO
+     * @return
+     */
     PageResult search(EmployeePageQueryDTO employeePageQueryDTO);
+
+    /**
+     * set emp status: disable or enable
+     * @param status
+     */
+    void setStatus(Integer status, Long id);
 }

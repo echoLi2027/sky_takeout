@@ -83,6 +83,11 @@ public class EmployeeController {
         return Result.success();
     }
 
+    /**
+     * search emp by name(if has) and display by page
+     * @param employeePageQueryDTO
+     * @return
+     */
     @GetMapping("/page")
     @ApiOperation("paging displaying emp")
     public Result empPage(EmployeePageQueryDTO employeePageQueryDTO){
@@ -93,6 +98,21 @@ public class EmployeeController {
         log.info("zzy_log: paging emp result info : {}", result);
 
         return Result.success(result);
+    }
+
+    /**
+     * set emp status, disable or enable
+     * @param status
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("change emp status")
+    public Result empStatus(@PathVariable Integer status, Long id){
+        log.info("set emp status and emp_id: {}, {}", status,id);
+
+        employeeService.setStatus(status, id);
+
+        return Result.success();
     }
 
     /**
