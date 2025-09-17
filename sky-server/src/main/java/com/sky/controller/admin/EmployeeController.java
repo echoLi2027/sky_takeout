@@ -71,7 +71,7 @@ public class EmployeeController {
      * @param employeeDTO
      * @return
      */
-    @PostMapping()
+    @PostMapping
     @ApiOperation("insert emp")
     public Result insertEmp(@RequestBody EmployeeDTO employeeDTO){
 
@@ -113,6 +113,27 @@ public class EmployeeController {
         employeeService.setStatus(status, id);
 
         return Result.success();
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation("search emp by id")
+    public Result<Employee> empById(@PathVariable Integer id){
+        log.info("get emp by id: {}",id);
+
+        Employee employee = employeeService.searchById(id);
+
+        return Result.success(employee);
+    }
+
+    @PutMapping()
+    @ApiOperation("edit emp info")
+    public Result editEmp(@RequestBody EmployeeDTO employeeDTO){
+        log.info("zzy_log: controller, edit emp info: {}", employeeDTO);
+
+        employeeService.editEmp(employeeDTO);
+
+        return Result.success();
+
     }
 
     /**

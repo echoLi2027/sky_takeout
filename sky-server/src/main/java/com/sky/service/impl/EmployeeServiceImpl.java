@@ -123,4 +123,28 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     }
 
+    @Override
+    public Employee searchById(Integer id) {
+
+        Employee employee = employeeMapper.searchById(id);
+//        protect user info, so that the actual pw won't pass to the browser
+        employee.setPassword("******");
+
+        return employee;
+    }
+
+    @Override
+    public void editEmp(EmployeeDTO employeeDTO) {
+        Employee employee = new Employee();
+
+        BeanUtils.copyProperties(employeeDTO, employee);
+
+        employee.setUpdateUser(BaseContext.getCurrentId());
+
+        employee.setUpdateTime(LocalDateTime.now());
+
+        employeeMapper.updateEmp(employee);
+
+    }
+
 }
