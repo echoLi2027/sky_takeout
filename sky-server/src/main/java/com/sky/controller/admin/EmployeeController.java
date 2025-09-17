@@ -1,6 +1,7 @@
 package com.sky.controller.admin;
 
 import com.sky.constant.JwtClaimsConstant;
+import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.entity.Employee;
 import com.sky.properties.JwtProperties;
@@ -43,11 +44,11 @@ public class EmployeeController {
     @PostMapping("/login")
     @ApiOperation(value = "emp login")
     public Result<EmployeeLoginVO> login(@RequestBody EmployeeLoginDTO employeeLoginDTO) {
-        log.info("员工登录：{}", employeeLoginDTO);
+        log.info("employee login：{}", employeeLoginDTO);
 
         Employee employee = employeeService.login(employeeLoginDTO);
 
-        //登录成功后，生成jwt令牌
+//        after login success, generate jwt token
         Map<String, Object> claims = new HashMap<>();
         claims.put(JwtClaimsConstant.EMP_ID, employee.getId());
         String token = JwtUtil.createJWT(
@@ -55,7 +56,7 @@ public class EmployeeController {
                 jwtProperties.getAdminTtl(),
                 claims);
 
-//        Immutability - Once built, the object can't be changed (safer in multi-threaded environments)
+//        Immutability - Once built, the object can't be changed (safer in multi-thread environments)
         EmployeeLoginVO employeeLoginVO = EmployeeLoginVO.builder()
                 .id(employee.getId())
                 .userName(employee.getUsername())
@@ -66,8 +67,20 @@ public class EmployeeController {
         return Result.success(employeeLoginVO);
     }
 
+    @PostMapping
+    @ApiOperation("insert emp")
+    public Result insertEmp(@RequestBody EmployeeDTO employeeDTO){
+
+        log.info("zzy_log: controller, inserted emp info: {}", employeeDTO);
+
+        employeeService.saveEmp(employeeDTO);
+
+
+        return Result.success();
+    }
+
     /**
-     * 退出
+     * logout
      *
      * @return
      */
