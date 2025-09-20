@@ -125,7 +125,7 @@ public class EmployeeController {
         return Result.success(employee);
     }
 
-    @PutMapping()
+    @PutMapping
     @ApiOperation("edit emp info")
     public Result editEmp(@RequestBody EmployeeDTO employeeDTO){
         log.info("zzy_log: controller, edit emp info: {}", employeeDTO);

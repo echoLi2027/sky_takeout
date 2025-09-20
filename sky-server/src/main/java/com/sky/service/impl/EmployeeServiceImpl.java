@@ -77,16 +77,19 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setStatus(StatusConstant.ENABLE);
 
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
 
 //        cipher the initial password
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
+
+        /*
+        employee.setCreateTime(LocalDateTime.now());
+        employee.setUpdateTime(LocalDateTime.now());
 
 //        from JwtTokenAdminInterceptor saved emp_id get current id => actually is threadLocal
         employee.setCreateUser(BaseContext.getCurrentId());
         employee.setUpdateUser(BaseContext.getCurrentId());
 
+*/
         employeeMapper.insert(employee);
 
 
@@ -139,9 +142,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         BeanUtils.copyProperties(employeeDTO, employee);
 
-        employee.setUpdateUser(BaseContext.getCurrentId());
-
-        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setUpdateUser(BaseContext.getCurrentId());
+//
+//        employee.setUpdateTime(LocalDateTime.now());
 
         employeeMapper.updateEmp(employee);
 
