@@ -112,8 +112,8 @@ public class DishServiceImpl implements DishService {
 
 //        1. check dish status, if it's enable then cannot delete
         for (Long id : ids) {
-            Dish dish = dishMapper.selectById(id);
-            if (dish.getStatus() == StatusConstant.ENABLE){
+            DishVO dishVO = dishMapper.selectById(id);
+            if (dishVO.getStatus() == StatusConstant.ENABLE){
                 throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
             }
         }
@@ -137,5 +137,45 @@ public class DishServiceImpl implements DishService {
         }
 
 
+    }
+
+    @Override
+    public DishVO selectDishById(Long dishId) {
+
+        List<DishFlavor> flavors = dishFlavorMapper.selectByDishId(dishId);
+
+        DishVO dishVO = dishMapper.selectById(dishId);
+
+        dishVO.setFlavors(flavors);
+
+        return dishVO;
+    }
+
+    @Override
+    public void updateDish(DishDTO dishDTO) {
+
+//        1. update dish flavor
+/*
+// not good, this way need to call sql 2 times
+//        1.1 delete, if dish flavor used to not null
+        DishVO dishVO = dishMapper.selectById(dishDTO.getId());
+        if (dishVO.getFlavors() != null && dishVO.getFlavors().size() > 0){
+            dishFlavorMapper.deleteByDishId(dishDTO.getId());
+        }*/
+
+//        1.1 delete dish flavor
+        dishFlavorMapper.deleteByDishId(dishDTO.getId());
+//        1.2 insert, if dishDTO has dish flavor info
+        List<DishFlavor> flavors = dishDTO.getFlavors();
+        if (flavors!=null && flavors.size()>0){
+//            don't forget set dish_id, cause there is no dish_id in dishDTO
+            flavors.forEach(dishFlavor -> dishFlavor.setDishId(dishDTO.getId()));
+            dishFlavorMapper.saveBatch(flavors);
+        }
+
+//        2. update dish info
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDTO,dish);
+        dishMapper.update(dish);
     }
 }
