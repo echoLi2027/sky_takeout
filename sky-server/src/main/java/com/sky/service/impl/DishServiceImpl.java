@@ -9,18 +9,19 @@ import com.sky.context.BaseContext;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.dto.DishDTO;
+import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
+import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
 import com.sky.exception.DeletionNotAllowedException;
-import com.sky.mapper.CategoryMapper;
-import com.sky.mapper.DishFlavorMapper;
-import com.sky.mapper.DishMapper;
-import com.sky.mapper.SetmealMapper;
+import com.sky.exception.SetmealEnableFailedException;
+import com.sky.mapper.*;
 import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
 import com.sky.service.DishService;
+import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,9 @@ public class DishServiceImpl implements DishService {
     @Autowired
     private DishFlavorMapper dishFlavorMapper;
 
+    @Autowired
+    private SetmealDishMapper setmealDishMapper;
+
 
 
     @Transactional(rollbackFor = RuntimeException.class)
@@ -62,6 +66,76 @@ public class DishServiceImpl implements DishService {
             flavors.forEach(flavor -> {flavor.setDishId(dishId);});
             dishFlavorMapper.saveBatch(flavors);
         }
+
+    }
+
+    /**
+     * page query dishes on requirements
+     * @param dishPageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageQuery(DishPageQueryDTO dishPageQueryDTO) {
+
+        PageHelper.startPage(dishPageQueryDTO.getPage(),dishPageQueryDTO.getPageSize());
+
+
+        Page<DishVO> pageData = dishMapper.page(dishPageQueryDTO);
+
+
+        return new PageResult(pageData.getTotal(), pageData.getResult());
+    }
+
+
+    @Transactional(rollbackFor = RuntimeException.class)
+    @Override
+    public void deleteIds(List<Long> ids) {
+/*
+//***********logic flaw***********
+        for (Long id : ids) {
+//         1. setmeal_dish doesn't have current deleted dish then we can delete the dish
+            Setmeal setmeal = setmealDishMapper.selectByDishId(id);
+            if (setmeal != null){
+                throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
+            }else{
+                //        2. if dish is not involved in the set meal, delete the flavor connected with the dish
+                dishFlavorMapper.deleteByDishId(id);
+                //        3.delete dish
+                dishMapper.deleteById(id);
+            }
+
+        }
+
+        //***********logic flaw***********
+ */
+
+
+//        1. check dish status, if it's enable then cannot delete
+        for (Long id : ids) {
+            Dish dish = dishMapper.selectById(id);
+            if (dish.getStatus() == StatusConstant.ENABLE){
+                throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
+            }
+        }
+
+
+//        2. check all dishes' setmeal_dish condition, find out whether dishes bind with set meal
+//        if bind with set meal cannot delete
+        List<Long> setmeal_ids = setmealDishMapper.selectByDishIds(ids);
+        if (setmeal_ids != null && setmeal_ids.size() > 0){
+            throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
+        }
+
+
+//        3. everything checked, now can delete
+        for (Long id : ids) {
+            //        3.1. if dish is not involved in the set meal, delete the flavor connected with the dish
+            dishFlavorMapper.deleteByDishId(id);
+            //        3.2. delete dish
+            dishMapper.deleteById(id);
+
+        }
+
 
     }
 }
