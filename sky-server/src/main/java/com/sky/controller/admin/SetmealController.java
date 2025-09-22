@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @Api(tags = "setmeal operations")
 @RestController
@@ -41,5 +43,15 @@ public class SetmealController {
 
         return Result.success(result);
 
+    }
+
+    @DeleteMapping
+    @ApiOperation(("batch delete set meals"))
+    public Result deleteSetmeals(@RequestParam List<Long> ids){
+        log.info("zzy_log: delete set meal ids: {}", ids);
+
+        setmealService.deleteSetmeals(ids);
+
+        return Result.success();
     }
 }
