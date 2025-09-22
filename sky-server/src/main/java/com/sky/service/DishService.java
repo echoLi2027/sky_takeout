@@ -5,6 +5,7 @@ import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Category;
+import com.sky.entity.Dish;
 import com.sky.result.PageResult;
 import com.sky.vo.DishVO;
 
@@ -43,4 +44,11 @@ public interface DishService {
      * @param dishDTO
      */
     void updateDish(DishDTO dishDTO);
+
+
+    /**
+     * query all dishes by category
+     * @return
+     */
+    List<Dish> getCategoryDish(Integer categoryId);
 }

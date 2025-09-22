@@ -44,4 +44,13 @@ public interface DishMapper {
 
     @AutoFill(OperationType.UPDATE)
     void update(Dish dish);
+
+
+    /**
+     * select by category id, make sure that the dish is on sell
+     * @param categoryId
+     * @return
+     */
+    @Select("select * from dish where category_id = #{categoryID} and status = 1")
+    List<Dish> selectByCategoryId(Integer categoryId);
 }
