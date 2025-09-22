@@ -14,6 +14,7 @@
     <insert id="insertBatch">
         insert into setmeal_dish(setmeal_id, dish_id, name, price, copies)
         values
+--             cannot use "," in the sql, it will throw error, use the separator
             <foreach collection="setmealDishes" item="setmealDish" separator=",">
                 (#{setmealDish.setmealId}, #{setmealDish.dishId}, #{setmealDish.name}, #{setmealDish.price}, #{setmealDish.copies})
             </foreach>

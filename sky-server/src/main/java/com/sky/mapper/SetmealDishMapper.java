@@ -11,7 +11,6 @@ import java.util.List;
 public interface SetmealDishMapper {
 
 
-
     List<Long> selectByDishIds(List<Long> dishIds);
 
     void insertBatch(List<SetmealDish> setmealDishes);
