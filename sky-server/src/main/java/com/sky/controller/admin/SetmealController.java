@@ -54,4 +54,35 @@ public class SetmealController {
 
         return Result.success();
     }
+
+    @PostMapping("/status/{status}")
+    @ApiOperation("enable/disable setmeal status")
+    public Result setStatus(@PathVariable Integer status, Long id){
+        log.info("zzy_log: set setmeal status which setmeal need to change what status and setmealId: {}, {}", status,id);
+
+        setmealService.setStatus(status,id);
+
+        return Result.success();
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation("get setmeal info by id")
+    public Result<SetmealVO> getById(@PathVariable Long id){
+        log.info("zzy_log: search by setmeal id: {}", id);
+
+        SetmealVO setmealVO = setmealService.getById(id);
+
+        return Result.success(setmealVO);
+    }
+
+    @PutMapping
+    @ApiOperation("update setmeal info")
+    public Result updateSetmeal(@RequestBody SetmealDTO setmealDTO){
+//        no setmealId
+        log.info("zzy_log: update setmeal info: {}", setmealDTO);
+
+        setmealService.update(setmealDTO);
+
+        return Result.success();
+    }
 }

@@ -27,4 +27,24 @@ public interface SetmealService {
      * @param ids
      */
     void deleteSetmeals(List<Long> ids);
+
+    /**
+     * change the status of setmeal
+     * @param status
+     * @param id
+     */
+    void setStatus(Integer status, Long id);
+
+    /**
+     * get setmeal and corresponding setmeal_dish info by setmeal_id
+     * @param id
+     * @return
+     */
+    SetmealVO getById(Long id);
+
+    /**
+     * update setmeal info
+     * @param setmealDTO
+     */
+    void update(SetmealDTO setmealDTO);
 }
