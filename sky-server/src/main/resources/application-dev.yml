@@ -11,3 +11,9 @@ sky:
     endpoint: "https://oss-cn-beijing.aliyuncs.com"
     region: "cn-beijing"
     bucket-name: "javaweb-zhou"
+
+  redis:
+    host: localhost
+    port: 6379
+    password: 123456
+    database: 10
