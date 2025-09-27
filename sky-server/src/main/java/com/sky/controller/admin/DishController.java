@@ -26,7 +26,7 @@ public class DishController {
 
     @GetMapping("/list")
     @ApiOperation("get all dishes info")
-    public Result<List<Dish>> searchByCategory(Integer categoryId){
+    public Result<List<Dish>> searchByCategory(Long categoryId){
 
         log.info("search dishes by categoryId: {}",categoryId);
 
