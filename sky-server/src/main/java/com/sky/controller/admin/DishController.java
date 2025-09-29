@@ -11,9 +11,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RequestMapping("/admin/dish")
 @RestController
@@ -23,6 +26,9 @@ public class DishController {
 
     @Autowired
     private DishService dishService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @GetMapping("/list")
     @ApiOperation("get all dishes info")
@@ -42,6 +48,10 @@ public class DishController {
         log.info("zzy_log: inserted dishDTO: {}",dishDTO);
 
         dishService.save(dishDTO);
+
+//        if we add new dishes we need to delete that dish's category in redis
+        String key = "dish_" + dishDTO.getCategoryId();
+        cleanCache(key);
 
         return Result.success();
     }
@@ -65,6 +75,11 @@ public class DishController {
 
         dishService.deleteIds(ids);
 
+//        when we delete dishes we need to load the whole data again to the frontend
+//        because it consumes more time to search to decided which redis should be deleted.
+//        and also be aware here is not simply toString, but using * to match all scenarios
+        cleanCache("dish_*");
+
         return Result.success();
     }
 
@@ -79,6 +94,24 @@ public class DishController {
         return Result.success(dishVO);
     }
 
+    /**
+     * 菜品起售停售
+     *
+     * @param status
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("菜品起售停售")
+    public Result<String> startOrStop(@PathVariable Integer status, Long id) {
+        dishService.startOrStop(status, id);
+
+        //将所有的菜品缓存数据清理掉，所有以dish_开头的key
+        cleanCache("dish_*");
+
+        return Result.success();
+    }
+
     @PutMapping
     @ApiOperation("edit dish info")
     public Result updateDish(@RequestBody DishDTO dishDTO){
@@ -87,7 +120,19 @@ public class DishController {
 
         dishService.updateDish(dishDTO);
 
+        cleanCache("dish_*");
+
         return Result.success();
 
+    }
+
+    /**
+     * delete cache in redis according to patterns
+     * could be single field in a key could be the whole key
+     * @param pattern
+     */
+    private void cleanCache(String pattern){
+        Set keys = redisTemplate.keys(pattern);
+        redisTemplate.delete(keys);
     }
 }
