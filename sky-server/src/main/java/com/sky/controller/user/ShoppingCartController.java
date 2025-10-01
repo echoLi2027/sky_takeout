@@ -54,4 +54,11 @@ public class ShoppingCartController {
 
     }
 
+    @ApiOperation("clear shopping cart")
+    @DeleteMapping("/clean")
+    public Result clearShoppingCart(){
+        shoppingCartService.clear(BaseContext.getCurrentId());
+        return Result.success();
+    }
+
 }

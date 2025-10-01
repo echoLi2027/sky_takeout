@@ -94,6 +94,11 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
+    public void clear(Long currentId) {
+        shoppingCartMapper.deleteByUserId(currentId);
+    }
+
+    @Override
     public List<ShoppingCart> getShoppingCart(Long currentId) {
 
         return shoppingCartMapper.getByUserId(currentId);
