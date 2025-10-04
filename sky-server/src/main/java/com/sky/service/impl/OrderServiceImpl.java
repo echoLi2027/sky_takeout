@@ -1,8 +1,11 @@
 package com.sky.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
 import com.sky.entity.*;
@@ -10,6 +13,7 @@ import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
 import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.*;
+import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
@@ -21,9 +25,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -133,6 +139,11 @@ public class OrderServiceImpl implements OrderService {
         );*/
         JSONObject jsonObject = new JSONObject();
 //        jsonObject.put("code","ORDERPAID");
+        jsonObject.put("nonceStr", UUID.randomUUID());
+        jsonObject.put("paySign","wechatPaySimulation");
+        jsonObject.put("timeStamp", Timestamp.valueOf(LocalDateTime.now()));
+        jsonObject.put("signType","SHA256withRSA");
+        jsonObject.put("packageStr","testPackage");
 
 
 
@@ -165,5 +176,15 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         orderMapper.update(orders);
+    }
+
+    @Override
+    public PageResult pageHistory(OrdersPageQueryDTO ordersPageQueryDTO) {
+
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+
+        Page<Orders> ordersPage =  orderMapper.pageQuery(ordersPageQueryDTO);
+
+        return new PageResult(ordersPage.getTotal(), ordersPage.getResult());
     }
 }

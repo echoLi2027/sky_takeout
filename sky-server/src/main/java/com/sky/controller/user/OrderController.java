@@ -1,8 +1,10 @@
 package com.sky.controller.user;
 
 
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
+import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderOverViewVO;
@@ -13,6 +15,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Api(tags = "order relevant api")
 @RestController("userOrderController")
@@ -58,5 +62,17 @@ public class OrderController {
         log.info("zzy_log emulate payment success: {}",ordersPaymentDTO.getOrderNumber());
 
         return Result.success(orderPaymentVO);
+    }
+
+
+    @GetMapping("/historyOrders")
+    @ApiOperation("check user history orders")
+    public Result<PageResult> checkHistoryOrder(OrdersPageQueryDTO ordersPageQueryDTO){
+
+        log.info("zzy_log order page queryDTO: {}",ordersPageQueryDTO);
+
+        PageResult result = orderService.pageHistory(ordersPageQueryDTO);
+
+        return Result.success(result);
     }
 }
