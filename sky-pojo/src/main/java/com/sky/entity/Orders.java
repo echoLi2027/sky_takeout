@@ -110,4 +110,6 @@ public class Orders implements Serializable {
     private Integer tablewareStatus;
 
     List<OrderDetail> orderDetailList;
+
+    String OrderDishes;
 }

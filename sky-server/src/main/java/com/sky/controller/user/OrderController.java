@@ -4,6 +4,7 @@ package com.sky.controller.user;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
+import com.sky.entity.Orders;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
@@ -65,6 +66,11 @@ public class OrderController {
     }
 
 
+    /**
+     * check all historical orders [according to status]
+     * @param ordersPageQueryDTO
+     * @return
+     */
     @GetMapping("/historyOrders")
     @ApiOperation("check user history orders")
     public Result<PageResult> checkHistoryOrder(OrdersPageQueryDTO ordersPageQueryDTO){
@@ -72,6 +78,16 @@ public class OrderController {
         log.info("zzy_log order page queryDTO: {}",ordersPageQueryDTO);
 
         PageResult result = orderService.pageHistory(ordersPageQueryDTO);
+
+        return Result.success(result);
+    }
+
+    @GetMapping("/orderDetail/{id}")
+    @ApiOperation("get oder details by orderId")
+    public Result<Orders> getByOrderId(@PathVariable Long id){
+        log.info("zzy_log order historical query by order id: {}",id);
+
+        Orders result = orderService.getByOrderId(id);
 
         return Result.success(result);
     }

@@ -48,7 +48,7 @@
 
 
     <resultMap id="orderVO" type="com.sky.entity.Orders">
-        <id column="o.id" property="id"/>
+        <id column="id" property="id"/>
         <result column="number" property="number"/>
         <result column="status" property="status"/>
         <result column="user_id" property="userId"/>
@@ -89,7 +89,20 @@
         from orders o left join order_detail od
         on o.id = od.order_id
         <where>
-            <if test="status != null"> o.status = #{status}</if>
+            <if test="status != null">and o.status = #{status}</if>
+            <if test="beginTime != null and endTime != null">and o.order_time between #{beginTime} and #{endTime}</if>
+            <if test="number != null">and o.number = #{number}</if>
+            <if test="phone != null">and o.phone like concat('%', #{phone}, '%')</if>
+        </where>
+        order by order_time desc
+    </select>
+
+    <select id="queryByOrderId" resultMap="orderVO">
+        select o.*, od.id od_id, od.name od_name, od.image, od.order_id, od.dish_id, od.setmeal_id, od.dish_flavor, od.number od_number, od.amount od_amount
+        from orders o left join order_detail od
+        on o.id = od.order_id
+        <where>
+            <if test="id != null">and o.id = #{id}</if>
         </where>
         order by order_time desc
     </select>

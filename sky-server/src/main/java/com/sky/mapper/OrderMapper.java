@@ -33,4 +33,11 @@ public interface OrderMapper {
      * @return
      */
     Page<Orders> pageQuery(OrdersPageQueryDTO ordersPageQueryDTO);
+
+    /**
+     * return particular order by order_id
+     * @param id
+     * @return
+     */
+    Orders queryByOrderId(Long id);
 }

@@ -3,11 +3,13 @@ package com.sky.service;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
+import com.sky.entity.Orders;
 import com.sky.result.PageResult;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
 
 public interface OrderService {
+
     /**
      * user submit order
      * @param ordersSubmitDTO
@@ -34,4 +36,18 @@ public interface OrderService {
      */
     PageResult pageHistory(OrdersPageQueryDTO ordersPageQueryDTO);
 
+    /**
+     * query orders by id
+     *
+     * @param id
+     * @return
+     */
+    Orders getByOrderId(Long id);
+
+    /**
+     * admin page search
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    PageResult pageSearch(OrdersPageQueryDTO ordersPageQueryDTO);
 }

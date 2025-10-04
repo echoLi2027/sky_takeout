@@ -187,4 +187,36 @@ public class OrderServiceImpl implements OrderService {
 
         return new PageResult(ordersPage.getTotal(), ordersPage.getResult());
     }
+
+    @Override
+    public Orders getByOrderId(Long id) {
+
+        Orders orders = orderMapper.queryByOrderId(id);
+
+        return orders;
+    }
+
+    @Override
+    public PageResult pageSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+
+        Page<Orders> ordersPage =  orderMapper.pageQuery(ordersPageQueryDTO);
+
+        List<Orders> result = ordersPage.getResult();
+
+        for (Orders orders : result) {
+            List<OrderDetail> orderDetailList = orders.getOrderDetailList();
+            List<String> names = new ArrayList<>();
+            for (OrderDetail orderDetail : orderDetailList) {
+                String name = orderDetail.getName();
+                names.add(name);
+            }
+            orders.setOrderDishes(names.toArray().toString());
+            names.clear();
+        }
+
+        return new PageResult(ordersPage.getTotal(), result);
+
+    }
 }
