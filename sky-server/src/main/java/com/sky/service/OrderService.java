@@ -6,6 +6,7 @@ import com.sky.dto.OrdersSubmitDTO;
 import com.sky.entity.Orders;
 import com.sky.result.PageResult;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 
 public interface OrderService {
@@ -50,4 +51,18 @@ public interface OrderService {
      * @return
      */
     PageResult pageSearch(OrdersPageQueryDTO ordersPageQueryDTO);
+
+
+    /**
+     * get count of different status for the orders
+     * @return
+     */
+    OrderStatisticsVO getOrderStatistics();
+
+
+    /**
+     * update status into confirmed
+     * @param orders
+     */
+    void updateStatus(Orders orders);
 }

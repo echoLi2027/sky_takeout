@@ -107,4 +107,16 @@
         order by order_time desc
     </select>
 
+    <select id="getStatistics" resultType="java.util.Map">
+        select
+            (case
+                when status = 2 then 'toBeConfirmed'
+                when status = 3 then 'confirmed'
+                when status - 4 then 'deliveryInProgress'
+                end) status, count(*) num
+        from orders
+        group by status
+    </select>
+
+
 </mapper>

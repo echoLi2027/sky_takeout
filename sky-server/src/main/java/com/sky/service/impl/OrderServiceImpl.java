@@ -17,6 +17,7 @@ import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -27,9 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -212,11 +212,37 @@ public class OrderServiceImpl implements OrderService {
                 String name = orderDetail.getName();
                 names.add(name);
             }
-            orders.setOrderDishes(names.toArray().toString());
+            String collect = names.stream().collect(Collectors.joining(","));
+            orders.setOrderDishes(collect);
             names.clear();
         }
 
         return new PageResult(ordersPage.getTotal(), result);
 
+    }
+
+    @Override
+    public OrderStatisticsVO getOrderStatistics() {
+
+        List<Map<String, Object>> statistics = orderMapper.getStatistics();
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+        for (Map<String, Object> statistic : statistics) {
+            String status = (String)statistic.get("status");
+            if (status.equals("toBeConfirmed")){
+                orderStatisticsVO.setToBeConfirmed((Long) statistic.get("num"));
+            }
+            else if(status.equals("confirmed")){
+                orderStatisticsVO.setConfirmed((Integer) statistic.get("num"));
+            }else{
+                orderStatisticsVO.setDeliveryInProgress((Integer) statistic.get("num"));
+            }
+        }
+        return orderStatisticsVO;
+    }
+
+    @Override
+    public void updateStatus(Orders orders) {
+        orders.setStatus(Orders.CONFIRMED);
+        orderMapper.update(orders);
     }
 }
