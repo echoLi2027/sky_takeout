@@ -42,6 +42,9 @@
             <if test="deliveryTime != null">
                 delivery_time = #{deliveryTime}
             </if>
+            <if test="deliveryStatus != null">
+                delivery_status = #{deliveryStatus}
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -110,9 +113,12 @@
     <select id="getStatistics" resultType="java.util.Map">
         select
             (case
+                when status = 1 then 'PENDING_PAYMENT'
                 when status = 2 then 'toBeConfirmed'
                 when status = 3 then 'confirmed'
-                when status - 4 then 'deliveryInProgress'
+                when status = 4 then 'deliveryInProgress'
+                when status = 5 then 'completed'
+                when status = 6 then 'cancelled'
                 end) status, count(*) num
         from orders
         group by status

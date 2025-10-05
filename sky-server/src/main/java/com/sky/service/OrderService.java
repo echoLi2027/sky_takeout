@@ -65,4 +65,22 @@ public interface OrderService {
      * @param orders
      */
     void updateStatus(Orders orders);
+
+    /**
+     * reject orders
+     * @param orders
+     */
+    void rejectOrder(Orders orders);
+
+    /**
+     * delivery order
+     * @param id
+     */
+    void deliveryOrder(Long id);
+
+    /**
+     * complete order
+     * @param id
+     */
+    void completeOrder(Long id);
 }

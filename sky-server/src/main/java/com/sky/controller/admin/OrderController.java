@@ -60,6 +60,48 @@ public class OrderController {
         return Result.success();
     }
 
+    @PutMapping("/rejection")
+    @ApiOperation("reject order, also need to refund the money")
+    public Result rejectOrder(@RequestBody Orders orders){
+        log.info("zzy_log reject order, focus on the reject reason: {}",orders);
+
+        orderService.rejectOrder(orders);
+
+        return Result.success();
+    }
+
+    @PutMapping("/cancel")
+    @ApiOperation("cancel order, also need to refund the money")
+    public Result cancelOrder(@RequestBody Orders orders){
+        log.info("zzy_log admin cancel order, focus on the reject reason: {}",orders);
+
+        orderService.rejectOrder(orders);
+
+        return Result.success();
+    }
+
+    @PutMapping("/delivery/{id}")
+    @ApiOperation("orders already starts delivery")
+    public Result deliveryOrders(@PathVariable Long id){
+
+        log.info("zzy_log admin delivery order, focus on the id: {}",id);
+
+        orderService.deliveryOrder(id);
+
+        return Result.success();
+    }
+
+    @PutMapping("/complete/{id}")
+    @ApiOperation("order delivered")
+    public Result orderComplte(@PathVariable Long id){
+
+        log.info("zzy_log admin complete order, focus on the id: {}",id);
+
+        orderService.completeOrder(id);
+
+        return Result.success();
+    }
+
 
 
 }

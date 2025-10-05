@@ -20,6 +20,7 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -232,9 +233,13 @@ public class OrderServiceImpl implements OrderService {
                 orderStatisticsVO.setToBeConfirmed((Long) statistic.get("num"));
             }
             else if(status.equals("confirmed")){
-                orderStatisticsVO.setConfirmed((Integer) statistic.get("num"));
-            }else{
-                orderStatisticsVO.setDeliveryInProgress((Integer) statistic.get("num"));
+                orderStatisticsVO.setConfirmed((Long) statistic.get("num"));
+            }else if(status.equals("deliveryInProgress")){
+                orderStatisticsVO.setDeliveryInProgress((Long) statistic.get("num"));
+            }else if(status.equals("completed")){
+                orderStatisticsVO.setCompleted((Long) statistic.get("num"));
+            }else if(status.equals("cancelled")){
+                orderStatisticsVO.setCancelled((Long) statistic.get("num"));
             }
         }
         return orderStatisticsVO;
@@ -243,6 +248,41 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void updateStatus(Orders orders) {
         orders.setStatus(Orders.CONFIRMED);
+//        orders.setDeliveryStatus(0);
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void rejectOrder(Orders orders) {
+
+//        1. refund the money
+        log.info("zzy_log emulate refund method.....");
+//        2. update orders
+        orders.setPayStatus(Orders.REFUND);
+        orders.setStatus(Orders.CANCELLED);
+
+        orderMapper.update(orders);
+
+    }
+
+    @Override
+    public void deliveryOrder(Long id) {
+        Orders orders = new Orders();
+
+        orders.setId(id);
+        orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
+//        orders.setDeliveryStatus(1);
+
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void completeOrder(Long id) {
+        Orders orders = new Orders();
+
+        orders.setId(id);
+        orders.setStatus(Orders.COMPLETED);
+
         orderMapper.update(orders);
     }
 }

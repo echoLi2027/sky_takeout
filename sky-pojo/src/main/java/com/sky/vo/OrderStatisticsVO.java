@@ -9,8 +9,12 @@ public class OrderStatisticsVO implements Serializable {
     private Long toBeConfirmed;
 
     //待派送数量
-    private Integer confirmed;
+    private Long confirmed;
 
     //派送中数量
-    private Integer deliveryInProgress;
+    private Long deliveryInProgress;
+
+    private Long completed;
+
+    private Long cancelled;
 }
