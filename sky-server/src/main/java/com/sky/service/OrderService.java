@@ -8,6 +8,7 @@ import com.sky.result.PageResult;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.vo.OrderVO;
 
 public interface OrderService {
 
@@ -32,10 +33,10 @@ public interface OrderService {
 
     /**
      * page query history order
-     * @param ordersPageQueryDTO
+     * @param page, pageSize, status
      * @return
      */
-    PageResult pageHistory(OrdersPageQueryDTO ordersPageQueryDTO);
+    PageResult pageQuery4User(int page, int pageSize, Integer status);
 
     /**
      * query orders by id
@@ -43,7 +44,7 @@ public interface OrderService {
      * @param id
      * @return
      */
-    Orders getByOrderId(Long id);
+    OrderVO getByOrderId(Long id);
 
     /**
      * admin page search
@@ -68,9 +69,9 @@ public interface OrderService {
 
     /**
      * reject orders
-     * @param orders
+     * @param id
      */
-    void rejectOrder(Orders orders);
+    void rejectOrder(Long id);
 
     /**
      * delivery order
@@ -83,4 +84,10 @@ public interface OrderService {
      * @param id
      */
     void completeOrder(Long id);
+
+    /**
+     * add order into shopping cart again
+     * @param id
+     */
+    void orderRepetition(Long id);
 }

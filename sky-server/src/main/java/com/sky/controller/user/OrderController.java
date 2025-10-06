@@ -8,16 +8,14 @@ import com.sky.entity.Orders;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
-import com.sky.vo.OrderOverViewVO;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.vo.OrderVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Api(tags = "order relevant api")
 @RestController("userOrderController")
@@ -68,16 +66,16 @@ public class OrderController {
 
     /**
      * check all historical orders [according to status]
-     * @param ordersPageQueryDTO
+     * @param page,pageSize,status
      * @return
      */
     @GetMapping("/historyOrders")
     @ApiOperation("check user history orders")
-    public Result<PageResult> checkHistoryOrder(OrdersPageQueryDTO ordersPageQueryDTO){
+    public Result<PageResult> checkHistoryOrder(int page, int pageSize, Integer status){
 
-        log.info("zzy_log order page queryDTO: {}",ordersPageQueryDTO);
+        log.info("zzy_log order page query 3 params: {},{}, {}",page, pageSize, status);
 
-        PageResult result = orderService.pageHistory(ordersPageQueryDTO);
+        PageResult result = orderService.pageQuery4User(page,pageSize, status);
 
         return Result.success(result);
     }
@@ -87,8 +85,29 @@ public class OrderController {
     public Result<Orders> getByOrderId(@PathVariable Long id){
         log.info("zzy_log order historical query by order id: {}",id);
 
-        Orders result = orderService.getByOrderId(id);
+        OrderVO result = orderService.getByOrderId(id);
 
         return Result.success(result);
+    }
+
+
+    @PutMapping("/cancel/{id}")
+    @ApiOperation("user cancel order, also need to refund the money")
+    public Result cancelOrder(@PathVariable Long id){
+        log.info("zzy_log user cancel order, focus on the id: {}",id);
+
+        orderService.rejectOrder(id);
+
+        return Result.success();
+    }
+
+    @PostMapping("/repetition/{id}")
+    @ApiOperation("user get a repetition order")
+    public Result repetitionOrder(@PathVariable Long id) {
+
+        orderService.orderRepetition(id);
+
+
+        return Result.success();
     }
 }

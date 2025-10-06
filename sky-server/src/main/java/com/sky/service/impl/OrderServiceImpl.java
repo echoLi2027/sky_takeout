@@ -8,6 +8,7 @@ import com.sky.context.BaseContext;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.ShoppingCartDTO;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
@@ -15,18 +16,18 @@ import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.*;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
+import com.sky.service.ShoppingCartService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.vo.OrderVO;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -53,6 +54,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private WeChatPayUtil weChatPayUtil;
+
+    @Autowired
+    private ShoppingCartService shoppingCartService;
 
 
     /**
@@ -179,32 +183,83 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(orders);
     }
 
+    @Transactional(rollbackFor = RuntimeException.class)
     @Override
-    public PageResult pageHistory(OrdersPageQueryDTO ordersPageQueryDTO) {
+    public PageResult pageQuery4User(int page, int pageSize, Integer status) {
 
-        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        PageHelper.startPage(page, pageSize);
 
-        Page<Orders> ordersPage =  orderMapper.pageQuery(ordersPageQueryDTO);
+        OrdersPageQueryDTO ordersPageQueryDTO = new OrdersPageQueryDTO();
+        ordersPageQueryDTO.setPage(page);
+        ordersPageQueryDTO.setPageSize(pageSize);
+        ordersPageQueryDTO.setStatus(status);
+//        it's current user's orders
+        ordersPageQueryDTO.setUserId(BaseContext.getCurrentId());
 
-        return new PageResult(ordersPage.getTotal(), ordersPage.getResult());
+//        Page<Orders> ordersPage =  orderMapper.pageQuery(ordersPageQueryDTO);
+
+        Page<Orders> ordersPage = orderMapper.pageQuery4User(ordersPageQueryDTO);
+
+        List<OrderVO> list = new ArrayList<>();
+
+//        make sure that this user has orders
+        if (ordersPage != null && ordersPage.getTotal() > 0){
+            for (Orders orders : ordersPage) {
+
+                List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+
+                OrderVO orderVO = new OrderVO();
+                BeanUtils.copyProperties(orders,orderVO);
+                orderVO.setOrderDetailList(orderDetailList);
+
+                list.add(orderVO);
+            }
+        }
+
+        return new PageResult(ordersPage.getTotal(), list);
     }
 
     @Override
-    public Orders getByOrderId(Long id) {
+    public OrderVO getByOrderId(Long id) {
 
         Orders orders = orderMapper.queryByOrderId(id);
 
-        return orders;
+//        get orderDetails list by orders
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+
+        OrderVO orderVO = new OrderVO();
+        BeanUtils.copyProperties(orders, orderVO);
+        orderVO.setOrderDetailList(orderDetailList);
+
+
+        return orderVO;
     }
 
+    @Transactional(rollbackFor = RuntimeException.class)
     @Override
     public PageResult pageSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
 
         PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
 
-        Page<Orders> ordersPage =  orderMapper.pageQuery(ordersPageQueryDTO);
+        Page<Orders> ordersPage =  orderMapper.conditionQuery(ordersPageQueryDTO);
 
         List<Orders> result = ordersPage.getResult();
+
+        for (Orders orders : result) {
+
+            List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+
+            List<String> names = new ArrayList<>();
+            for (OrderDetail orderDetail : orderDetailList) {
+                String name = orderDetail.getName();
+                names.add(name);
+            }
+            String collect = names.stream().collect(Collectors.joining(","));
+            orders.setOrderDishes(collect);
+            names.clear();
+        }
+
+        /*List<Orders> result = ordersPage.getResult();
 
         for (Orders orders : result) {
             List<OrderDetail> orderDetailList = orders.getOrderDetailList();
@@ -216,7 +271,7 @@ public class OrderServiceImpl implements OrderService {
             String collect = names.stream().collect(Collectors.joining(","));
             orders.setOrderDishes(collect);
             names.clear();
-        }
+        }*/
 
         return new PageResult(ordersPage.getTotal(), result);
 
@@ -253,13 +308,40 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void rejectOrder(Orders orders) {
+    public void rejectOrder(Long id) {
 
-//        1. refund the money
-        log.info("zzy_log emulate refund method.....");
-//        2. update orders
-        orders.setPayStatus(Orders.REFUND);
+//        1. get order by id
+        Orders ordersDB = orderMapper.queryByOrderId(id);
+//        verify if order exist
+        if (ordersDB == null){
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+//        verify the order status correct or not
+//        by far admin hasn't accepted the order, so the status should less than 2
+        if (ordersDB.getStatus() > 2){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        Orders orders = new Orders();
+        orders.setId(ordersDB.getId());
+
+//        if order is already paid we need to refund
+        if (ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)){
+            //        emulate refund the money
+            log.info("zzy_log emulate refund method.....");
+
+//            change payStatus to refund, because from here we know the money has refunded.
+            orders.setPayStatus(Orders.REFUND);
+        }
+
+
+//        update orders
+//        after refund the money we can change it into cancelled
         orders.setStatus(Orders.CANCELLED);
+        orders.setCancelTime(LocalDateTime.now());
+        orders.setCancelReason("user cancelled.");
+
 
         orderMapper.update(orders);
 
@@ -284,5 +366,49 @@ public class OrderServiceImpl implements OrderService {
         orders.setStatus(Orders.COMPLETED);
 
         orderMapper.update(orders);
+    }
+
+    @Override
+    public void orderRepetition(Long id) {
+
+        /*for (OrderDetail orderDetail : orderDetailMapper.getByOrderId(id)) {
+            Long dishId = orderDetail.getDishId();
+            ShoppingCartDTO shoppingCartDTO = new ShoppingCartDTO();
+            if (dishId!=null){
+                shoppingCartDTO.setDishId(dishId);
+                shoppingCartService.addShoppingCart(shoppingCartDTO);
+            }else{
+                shoppingCartDTO.setSetmealId(orderDetail.getSetmealId());
+                shoppingCartDTO.setDishFlavor(orderDetail.getDishFlavor());
+                shoppingCartService.addShoppingCart(shoppingCartDTO);
+            }
+        }*/
+
+//        we can also create our own logic not depend on shopping service, make application more robust, each part independently
+//        1. check current user id
+        Long userId = BaseContext.getCurrentId();
+
+//        check order details
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
+
+//        convert order details obj into shopping cart obj
+        List<ShoppingCart> shoppingCartList = orderDetailList.stream().map(x -> {
+            ShoppingCart shoppingCart = new ShoppingCart();
+
+//            copy original order details into new shopping cart obj
+//            "id" property is the ignore property we don't need copy to shoppingCart
+            BeanUtils.copyProperties(x, shoppingCart, "id");
+            shoppingCart.setUserId(userId);
+            shoppingCart.setCreateTime(LocalDateTime.now());
+
+//            so we convert orderDetail obj into shoppingCart obj
+            return shoppingCart;
+
+        }).collect(Collectors.toList());
+
+//        insert shoppingCartList into db
+        shoppingCartMapper.insertBatch(shoppingCartList);
+
+
     }
 }

@@ -39,6 +39,15 @@ public interface OrderMapper {
      */
     Page<Orders> pageQuery(OrdersPageQueryDTO ordersPageQueryDTO);
 
+    Page<Orders> pageQuery4User(OrdersPageQueryDTO ordersPageQueryDTO);
+
+    /**
+     * we only need orders,no order details
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    Page<Orders> conditionQuery(OrdersPageQueryDTO ordersPageQueryDTO);
+
     /**
      * return particular order by order_id
      * @param id

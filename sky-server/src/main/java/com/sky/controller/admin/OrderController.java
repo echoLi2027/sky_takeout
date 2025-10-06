@@ -65,7 +65,7 @@ public class OrderController {
     public Result rejectOrder(@RequestBody Orders orders){
         log.info("zzy_log reject order, focus on the reject reason: {}",orders);
 
-        orderService.rejectOrder(orders);
+//        orderService.rejectOrder(orders);
 
         return Result.success();
     }
@@ -75,7 +75,7 @@ public class OrderController {
     public Result cancelOrder(@RequestBody Orders orders){
         log.info("zzy_log admin cancel order, focus on the reject reason: {}",orders);
 
-        orderService.rejectOrder(orders);
+//        orderService.rejectOrder(orders);
 
         return Result.success();
     }
