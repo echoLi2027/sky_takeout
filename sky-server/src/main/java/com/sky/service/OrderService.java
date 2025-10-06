@@ -51,7 +51,7 @@ public interface OrderService {
      * @param ordersPageQueryDTO
      * @return
      */
-    PageResult pageSearch(OrdersPageQueryDTO ordersPageQueryDTO);
+    PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO);
 
 
     /**

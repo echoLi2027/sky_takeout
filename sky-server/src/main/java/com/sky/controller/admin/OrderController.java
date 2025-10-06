@@ -28,7 +28,7 @@ public class OrderController {
 
         log.info("zzy_log admin orders query conditions: {}", ordersPageQueryDTO);
 
-        PageResult result = orderService.pageSearch(ordersPageQueryDTO);
+        PageResult result = orderService.conditionSearch(ordersPageQueryDTO);
 
         return Result.success(result);
     }

@@ -27,6 +27,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -237,8 +238,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(rollbackFor = RuntimeException.class)
     @Override
-    public PageResult pageSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
 
+        /*
         PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
 
         Page<Orders> ordersPage =  orderMapper.conditionQuery(ordersPageQueryDTO);
@@ -259,21 +261,53 @@ public class OrderServiceImpl implements OrderService {
             names.clear();
         }
 
-        /*List<Orders> result = ordersPage.getResult();
-
-        for (Orders orders : result) {
-            List<OrderDetail> orderDetailList = orders.getOrderDetailList();
-            List<String> names = new ArrayList<>();
-            for (OrderDetail orderDetail : orderDetailList) {
-                String name = orderDetail.getName();
-                names.add(name);
-            }
-            String collect = names.stream().collect(Collectors.joining(","));
-            orders.setOrderDishes(collect);
-            names.clear();
-        }*/
-
         return new PageResult(ordersPage.getTotal(), result);
+
+ */
+
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+
+        Page<Orders> ordersPage =  orderMapper.conditionQuery(ordersPageQueryDTO);
+
+        List<OrderVO> orderVOList = getOrderVOList(ordersPage);
+
+        return new PageResult(ordersPage.getTotal(), orderVOList);
+
+    }
+
+    private List<OrderVO> getOrderVOList(Page<Orders> page){
+
+        List<OrderVO> orderVOList = new ArrayList<>();
+
+        List<Orders> result = page.getResult();
+
+        if (!CollectionUtils.isEmpty(result)){
+            for (Orders orders : result) {
+//                copy same properties into OrderVO
+                OrderVO orderVO = new OrderVO();
+                BeanUtils.copyProperties(orders,orderVO);
+                String orderDishesStr = getOrderDishesStr(orders);
+
+//                add order detail info into orderVO
+                orderVO.setOrderDishes(orderDishesStr);
+                orderVOList.add(orderVO);
+            }
+        }
+        return orderVOList;
+    }
+
+    private String getOrderDishesStr(Orders orders){
+//        get order dishes and amount
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+
+//        concat each dish info(dishName*amount)
+        List<String> stringList = orderDetailList.stream().map(x -> {
+            String orderDish = x.getName() + "*" + x.getNumber() + ";";
+
+            return orderDish;
+        }).collect(Collectors.toList());
+
+        return String.join("",stringList);
 
     }
 
