@@ -111,5 +111,5 @@ public class Orders implements Serializable {
 
     List<OrderDetail> orderDetailList;
 
-    String orderDishes;
+//    String orderDishes;
 }

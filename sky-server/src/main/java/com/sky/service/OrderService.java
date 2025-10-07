@@ -1,8 +1,6 @@
 package com.sky.service;
 
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.Orders;
 import com.sky.result.PageResult;
 import com.sky.vo.OrderPaymentVO;
@@ -63,9 +61,9 @@ public interface OrderService {
 
     /**
      * update status into confirmed
-     * @param orders
+     * @param ordersConfirmDTO
      */
-    void updateStatus(Orders orders);
+    void confirm(OrdersConfirmDTO ordersConfirmDTO);
 
     /**
      * reject orders
@@ -90,4 +88,16 @@ public interface OrderService {
      * @param id
      */
     void orderRepetition(Long id);
+
+    /**
+     * admin rejects order
+     * @param ordersRejectionDTO
+     */
+    void rejection(OrdersRejectionDTO ordersRejectionDTO);
+
+    /**
+     * order cancelled by admin
+     * @param ordersCancelDTO
+     */
+    void cancel(OrdersCancelDTO ordersCancelDTO);
 }

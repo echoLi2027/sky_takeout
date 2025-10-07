@@ -5,10 +5,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
-import com.sky.dto.ShoppingCartDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
@@ -335,10 +332,18 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void updateStatus(Orders orders) {
+    public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
+
+        Orders orders = Orders.builder()
+                .id(ordersConfirmDTO.getId())
+                .status(Orders.CONFIRMED)
+                .build();
+
+        orderMapper.update(orders);
+        /*
         orders.setStatus(Orders.CONFIRMED);
 //        orders.setDeliveryStatus(0);
-        orderMapper.update(orders);
+        orderMapper.update(orders);*/
     }
 
     @Override
@@ -383,9 +388,18 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void deliveryOrder(Long id) {
+
+//        get order
+        Orders ordersDB = orderMapper.queryByOrderId(id);
+
+//        verify order
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.CONFIRMED)){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
         Orders orders = new Orders();
 
-        orders.setId(id);
+        orders.setId(ordersDB.getId());
         orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
 //        orders.setDeliveryStatus(1);
 
@@ -394,10 +408,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void completeOrder(Long id) {
+//        get order
+        Orders ordersDB = orderMapper.queryByOrderId(id);
+
+//        verify order
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
         Orders orders = new Orders();
 
         orders.setId(id);
         orders.setStatus(Orders.COMPLETED);
+        orders.setDeliveryTime(LocalDateTime.now());
 
         orderMapper.update(orders);
     }
@@ -443,6 +466,55 @@ public class OrderServiceImpl implements OrderService {
 //        insert shoppingCartList into db
         shoppingCartMapper.insertBatch(shoppingCartList);
 
+
+    }
+
+    @Override
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
+//        get order by id
+        Orders orderDB = orderMapper.queryByOrderId(ordersRejectionDTO.getId());
+
+//        only order exists and order status == 2(waiting to accept) admin can reject order
+        if (orderDB == null || !orderDB.getStatus().equals(Orders.TO_BE_CONFIRMED)){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+//        refund
+        Integer payStatus = orderDB.getPayStatus();
+        if (Objects.equals(payStatus, Orders.PAID)){
+            log.info("zzy_log emulate refund api........");
+        }
+
+//        create a new order update orderDB into new order
+        Orders orders = new Orders();
+        orders.setId(orderDB.getId());
+        orders.setCancelTime(LocalDateTime.now());
+        orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        orders.setStatus(Orders.CANCELLED);
+
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void cancel(OrdersCancelDTO ordersCancelDTO) {
+
+//        check if order exist
+        Orders orderDB = orderMapper.queryByOrderId(ordersCancelDTO.getId());
+
+
+//        if we paid we refund
+        if(orderDB.getPayStatus().equals(Orders.PAID)){
+            log.info("zzy_log emulate refund api........");
+        }
+
+//        create new orders and update to db
+        Orders orders = new Orders();
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelReason(orders.getCancelReason());
+        orders.setCancelTime(LocalDateTime.now());
+        orders.setId(orderDB.getId());
+
+        orderMapper.update(orders);
 
     }
 }
