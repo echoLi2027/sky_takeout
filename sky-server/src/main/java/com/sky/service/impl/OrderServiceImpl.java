@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -14,11 +15,13 @@ import com.sky.mapper.*;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.service.ShoppingCartService;
+import com.sky.task.WebSocketTask;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +58,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private ShoppingCartService shoppingCartService;
-
+    @Autowired
+    private WebSocketServer webSocketServer;
 
     /**
      * user submit order
@@ -167,8 +171,9 @@ public class OrderServiceImpl implements OrderService {
      */
     public void paySuccess(String outTradeNo) {
 
+        Long userId = BaseContext.getCurrentId();
         // 根据订单号查询订单
-        Orders ordersDB = orderMapper.getByNumber(outTradeNo);
+        Orders ordersDB = orderMapper.getByNumber(outTradeNo, userId);
 
         // 根据订单id更新订单的状态、支付方式、支付状态、结账时间
         Orders orders = Orders.builder()
@@ -179,6 +184,16 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         orderMapper.update(orders);
+
+//        websocket tell admin that new order
+        Map map = new HashMap();
+        map.put("type", 1); // 1 means new order comes
+        map.put("orderId", orders.getId());
+        map.put("content", "orderId: " + outTradeNo);
+
+//        through websocket achieve order reminder to the shop, pass msg to browser
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+
     }
 
     @Transactional(rollbackFor = RuntimeException.class)
