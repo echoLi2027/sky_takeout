@@ -65,4 +65,11 @@ public interface OrderMapper {
 
     @Select("select * from orders where id = #{id}")
     Orders getById(Long id);
+
+    /**
+     * get assigned date's turnover
+     * @param map
+     * @return
+     */
+    Double getTurnover(Map map);
 }
