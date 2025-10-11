@@ -100,4 +100,10 @@ public interface OrderService {
      * @param ordersCancelDTO
      */
     void cancel(OrdersCancelDTO ordersCancelDTO);
+
+    /**
+     * remind the shop to be quick
+     * @param id
+     */
+    void reminder(Long id);
 }

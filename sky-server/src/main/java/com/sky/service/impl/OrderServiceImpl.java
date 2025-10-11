@@ -532,4 +532,22 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(orders);
 
     }
+
+    @Override
+    public void reminder(Long id) {
+
+        Orders orders = orderMapper.getById(id);
+        if (orders == null){
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        Map map = new HashMap();
+        map.put("type", 2); // 2 means user required for speed up
+        map.put("orderId", orders.getId());
+        map.put("content", "orderId: " + orders.getId());
+
+//        through websocket achieve order reminder to the shop, pass msg to browser
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+
+    }
 }
