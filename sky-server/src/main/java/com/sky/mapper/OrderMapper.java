@@ -72,4 +72,13 @@ public interface OrderMapper {
      * @return
      */
     Double getTurnover(Map map);
+
+    /**
+     * get user count
+     * @param begin
+     * @param end
+     * @param status
+     * @return
+     */
+    Integer orderCount(LocalDateTime begin, LocalDateTime end, Integer status);
 }
