@@ -5,6 +5,9 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Mapper
 public interface UserMapper {
 
@@ -16,4 +19,11 @@ public interface UserMapper {
 
     @Select("select * from user where id = #{id}")
     User getById(Long id);
+
+    /**
+     * get user count
+     * @param begin
+     * @param end
+     */
+    Integer userStatistics(LocalDateTime begin, LocalDateTime end);
 }
