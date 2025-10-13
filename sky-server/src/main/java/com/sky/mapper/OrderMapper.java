@@ -90,4 +90,8 @@ public interface OrderMapper {
      * @return
      */
     List<GoodsSalesDTO> getSalesTop10(LocalDateTime begin, LocalDateTime end);
+
+    Integer countByMap(Map map);
+
+    Double sumByMap(Map map);
 }

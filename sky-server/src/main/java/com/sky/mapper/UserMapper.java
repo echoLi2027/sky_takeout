@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Mapper
 public interface UserMapper {
@@ -26,4 +27,6 @@ public interface UserMapper {
      * @param end
      */
     Integer userStatistics(LocalDateTime begin, LocalDateTime end);
+
+    Integer countByMap(Map map);
 }
