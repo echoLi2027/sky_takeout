@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 
 @Slf4j
@@ -29,7 +30,8 @@ public class ReportController {
 
     @ApiOperation("get turnover statistics")
     @GetMapping("/turnoverStatistics")
-    public Result<TurnoverReportVO> getTurnover(@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin, @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end){
+    public Result<TurnoverReportVO> getTurnover(@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
+                                                @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end){
 
         log.info("get which period's turnover: from {} to {}", begin, end);
 
@@ -61,5 +63,11 @@ public class ReportController {
     public Result<SalesTop10ReportVO> top10(@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
                                             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end){
         return Result.success(reportService.getTop10(begin,end));
+    }
+
+    @GetMapping("/export")
+    @ApiOperation("export turnover statistic report table")
+    public void export(HttpServletResponse response){
+        reportService.exportBusinessData(response);
     }
 }
