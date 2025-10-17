@@ -176,11 +176,11 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public void exportBusinessData(HttpServletResponse response) {
         LocalDate begin = LocalDate.now().minusDays(30);
-        LocalDate end = LocalDate.now().minusDays(-1);
+        LocalDate end = LocalDate.now().minusDays(1);
         BusinessDataVO businessData = workspaceService.getBusinessData(LocalDateTime.of(begin, LocalTime.MIN), LocalDateTime.of(end, LocalTime.MAX));
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("template/turnoverReport.xlsx");
         try{
-//            create a new excel sheet obj based on exists template file
+//            create a new Excel sheet obj based on exists template file
             XSSFWorkbook excel = new XSSFWorkbook(inputStream);
             XSSFSheet sheet1 = excel.getSheet("Sheet1");
             sheet1.getRow(1).getCell(1).setCellValue(begin+" to "+end);
@@ -196,7 +196,7 @@ public class ReportServiceImpl implements ReportService {
             row.getCell(4).setCellValue(businessData.getUnitPrice());
             for (int i = 0; i < 30; i++) {
                 LocalDate date = begin.plusDays(i);
-                workspaceService.getBusinessData(LocalDateTime.of(date, LocalTime.MIN), LocalDateTime.of(date, LocalTime.MAX));
+                businessData = workspaceService.getBusinessData(LocalDateTime.of(date, LocalTime.MIN), LocalDateTime.of(date, LocalTime.MAX));
                 row = sheet1.getRow(7 + i);
                 row.getCell(1).setCellValue(date.toString());
                 row.getCell(2).setCellValue(businessData.getTurnover());
