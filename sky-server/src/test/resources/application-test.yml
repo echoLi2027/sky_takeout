@@ -1,0 +1,23 @@
+sky:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # host/port/database/username/password are overridden at runtime by
+    # BaseE2ETest's @DynamicPropertySource, wired to the Testcontainers MySQL instance.
+    host: localhost
+    port: 3306
+    database: sky_take_out_test
+    username: test
+    password: test
+
+  alioss:
+    endpoint: "https://oss-cn-beijing.aliyuncs.com"
+    region: "cn-beijing"
+    bucket-name: "test-bucket"
+
+  redis:
+    # overridden at runtime by BaseE2ETest's @DynamicPropertySource, wired to the
+    # Testcontainers Redis instance.
+    host: localhost
+    port: 6379
+    password: ""
+    database: 0

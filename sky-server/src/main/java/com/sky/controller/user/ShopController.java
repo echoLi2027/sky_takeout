@@ -6,29 +6,26 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.*;
 
-@RestController("userShopController")
-@Slf4j
 @RequestMapping("/user/shop")
-@Api(tags = "shop relevant api")
+@RestController("userShopController")
+@Api(tags = "shop relevant operations")
+@Slf4j
 public class ShopController {
 
-    public static final String KEY = "SHOP_STATUS";
+    private static final String KEY = "SHOP_STATUS";
 
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @GetMapping("/{status}")
+    @ApiOperation("get shop status")
+    public Result getShopStatus(){
 
-    @ApiOperation("user get shop status")
-    @GetMapping("/status")
-    public Result<Integer> getStatus(){
+        Integer status = (Integer)redisTemplate.opsForValue().get(KEY);
 
-        ValueOperations valueOperations = redisTemplate.opsForValue();
-        Integer status = (Integer) valueOperations.get(KEY);
-
-        log.info("user get the shop status:{}", status);
+        log.info("zzy_log: user get shop running status: {}", status == 1 ? "opening" : "closed");
 
         return Result.success(status);
     }
