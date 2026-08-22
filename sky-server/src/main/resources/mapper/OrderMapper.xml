@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sky.mapper.OrderMapper">
+
+    <insert id="insert" parameterType="Orders" useGeneratedKeys="true" keyProperty="id">
+        insert into orders
+        (number, status, user_id, address_book_id, order_time, checkout_time, pay_method, pay_status, amount, remark,
+         phone, address, consignee, estimated_delivery_time, delivery_status, pack_amount, tableware_number,
+         tableware_status)
+        values (#{number}, #{status}, #{userId}, #{addressBookId}, #{orderTime}, #{checkoutTime}, #{payMethod},
+                #{payStatus}, #{amount}, #{remark}, #{phone}, #{address}, #{consignee},
+                #{estimatedDeliveryTime}, #{deliveryStatus}, #{packAmount}, #{tablewareNumber}, #{tablewareStatus})
+    </insert>
+
+
+
+    <update id="update" parameterType="com.sky.entity.Orders">
+        update orders
+        <set>
+            <if test="cancelReason != null and cancelReason!='' ">
+                cancel_reason=#{cancelReason},
+            </if>
+            <if test="rejectionReason != null and rejectionReason!='' ">
+                rejection_reason=#{rejectionReason},
+            </if>
+            <if test="cancelTime != null">
+                cancel_time=#{cancelTime},
+            </if>
+            <if test="payStatus != null">
+                pay_status=#{payStatus},
+            </if>
+            <if test="payMethod != null">
+                pay_method=#{payMethod},
+            </if>
+            <if test="checkoutTime != null">
+                checkout_time=#{checkoutTime},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="deliveryTime != null">
+                delivery_time = #{deliveryTime}
+            </if>
+            <if test="deliveryStatus != null">
+                delivery_status = #{deliveryStatus}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+    <select id="orderCount" resultType="java.lang.Integer">
+        select count(id) from orders
+        <where>
+            <if test="begin != null"> and order_time &gt;= #{begin}</if>
+            <if test="end != null"> and order_time &lt;= #{end}</if>
+            <if test="status != null"> and status = #{status}</if>
+        </where>
+    </select>
+
+    <select id="pageQuery4User" resultType="Orders">
+        select *
+        from orders
+        <where>
+            <if test="number != null and number!=''">
+                and number like concat('%',#{number},'%')
+            </if>
+            <if test="phone != null and phone!=''">
+                and phone like concat('%',#{phone},'%')
+            </if>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="beginTime != null">
+                and order_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and order_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by order_time desc
+    </select>
+
+
+    <resultMap id="orderVO" type="com.sky.entity.Orders">
+        <id column="id" property="id"/>
+        <result column="number" property="number"/>
+        <result column="status" property="status"/>
+        <result column="user_id" property="userId"/>
+        <result column="address_book_id" property="addressBookId"/>
+        <result column="order_time" property="orderTime"/>
+        <result column="checkout_time" property="checkoutTime"/>
+        <result column="pay_method" property="payMethod"/>
+        <result column="pay_status" property="payStatus"/>
+        <result column="amount" property="amount"/>
+        <result column="remark" property="remark"/>
+        <result column="phone" property="phone"/>
+        <result column="address" property="address"/>
+        <result column="user_name" property="userName"/>
+        <result column="consignee" property="consignee"/>
+        <result column="cancel_reason" property="cancelReason"/>
+        <result column="rejection_reason" property="rejectionReason"/>
+        <result column="cancel_time" property="cancelTime"/>
+        <result column="estimated_delivery_time" property="estimatedDeliveryTime"/>
+        <result column="delivery_status" property="deliveryStatus"/>
+        <result column="delivery_time" property="deliveryTime"/>
+        <result column="pack_amount" property="packAmount"/>
+        <result column="tableware_number" property="tablewareNumber"/>
+        <result column="tableware_status" property="tablewareStatus"/>
+        <collection property="orderDetailList" ofType="com.sky.entity.OrderDetail">
+            <id column="od_id" property="id"/>
+            <result column="od_name" property="name"/>
+            <result column="image" property="image"/>
+            <result column="order_id" property="orderId"/>
+            <result column="dish_id" property="dishId"/>
+            <result column="setmeal_id" property="setmealId"/>
+            <result column="dish_flavor" property="dishFlavor"/>
+            <result column="od_number" property="number"/>
+            <result column="od_amount" property="amount"/>
+        </collection>
+    </resultMap>
+    <select id="pageQuery" resultMap="orderVO">
+        select o.*, od.id od_id, od.name od_name, od.image, od.order_id, od.dish_id, od.setmeal_id, od.dish_flavor, od.number od_number, od.amount od_amount
+        from orders o left join order_detail od
+        on o.id = od.order_id
+        <where>
+            <if test="status != null">and o.status = #{status}</if>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+        </where>
+        order by order_time desc
+    </select>
+
+
+    <select id="conditionQuery" resultType="orders">
+        select *
+        from orders
+        <where>
+            <if test="beginTime != null and endTime != null">and order_time between #{beginTime} and #{endTime}</if>
+            <if test="number != null">and number like concat('%', #{number}, '%')</if>
+            <if test="phone != null">and phone like concat('%', #{phone}, '%')</if>
+        </where>
+        order by order_time desc
+    </select>
+
+
+    <select id="queryByOrderId" resultMap="orderVO">
+        select o.*, od.id od_id, od.name od_name, od.image, od.order_id, od.dish_id, od.setmeal_id, od.dish_flavor, od.number od_number, od.amount od_amount
+        from orders o left join order_detail od
+        on o.id = od.order_id
+        <where>
+            <if test="id != null">and o.id = #{id}</if>
+        </where>
+        order by order_time desc
+    </select>
+
+    <select id="getStatistics" resultType="java.util.Map">
+        select
+            (case
+                when status = 1 then 'PENDING_PAYMENT'
+                when status = 2 then 'toBeConfirmed'
+                when status = 3 then 'confirmed'
+                when status = 4 then 'deliveryInProgress'
+                when status = 5 then 'completed'
+                when status = 6 then 'cancelled'
+                end) status, count(*) num
+        from orders
+        group by status
+    </select>
+
+    <select id="getTurnover" resultType="java.lang.Double">
+        select sum(amount) from orders
+        <where>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="begin != null">
+                and order_time &gt;= #{begin}
+            </if>
+            <if test="end != null">
+                and order_time &lt;= #{end}
+            </if>
+        </where>
+
+    </select>
+
+
+    <select id="getSalesTop10" resultType="com.sky.dto.GoodsSalesDTO">
+        select
+        od.name name, sum(od.number) number
+        from orders o, order_detail od
+        where o.id = od.order_id
+        and o.status = 5
+        <if test="begin != null">
+            and order_time &gt;= #{begin}
+        </if>
+        <if test="end != null">
+            and order_time &lt;= #{end}
+        </if>
+        group by name
+        order by number desc
+        limit 0,10
+    </select>
+
+    <select id="countByMap" resultType="java.lang.Integer">
+        select count(*)  from orders
+        <where>
+            <if test="begin != null"> and order_time &gt;= #{begin}</if>
+            <if test="end != null"> and order_time &lt;= #{end} </if>
+            <if test="status != null"> and status = #{status}</if>
+        </where>
+    </select>
+
+    <select id="sumByMap" resultType="java.lang.Double">
+        select sum(amount)  from orders
+        <where>
+            <if test="begin != null"> and order_time &gt;= #{begin} </if>
+            <if test="end != null"> and order_time &lt;= #{end} </if>
+            <if test="status != null"> and status = #{status}</if>
+        </where>
+    </select>
+
+
+</mapper>

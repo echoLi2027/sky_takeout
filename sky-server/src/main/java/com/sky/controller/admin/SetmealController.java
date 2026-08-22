@@ -10,6 +10,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +27,7 @@ public class SetmealController {
 
     @PostMapping
     @ApiOperation("insert setmeal")
+    @CacheEvict(cacheNames = "setmealCache", key = "#setmealDTO.categoryId")
     public Result insertSetMeal(@RequestBody SetmealDTO setmealDTO){
         log.info("zzy_log: insert set meal info: {}", setmealDTO);
 
@@ -47,6 +50,7 @@ public class SetmealController {
 
     @DeleteMapping
     @ApiOperation(("batch delete set meals"))
+    @CacheEvict(cacheNames = "setmealCache", allEntries = true)
     public Result deleteSetmeals(@RequestParam List<Long> ids){
         log.info("zzy_log: delete set meal ids: {}", ids);
 
@@ -57,6 +61,7 @@ public class SetmealController {
 
     @PostMapping("/status/{status}")
     @ApiOperation("enable/disable setmeal status")
+    @CacheEvict(cacheNames = "setmealCache", allEntries = true)
     public Result setStatus(@PathVariable Integer status, Long id){
         log.info("zzy_log: set setmeal status which setmeal need to change what status and setmealId: {}, {}", status,id);
 
@@ -77,6 +82,7 @@ public class SetmealController {
 
     @PutMapping
     @ApiOperation("update setmeal info")
+    @CacheEvict(cacheNames = "setmealCache", allEntries = true)
     public Result updateSetmeal(@RequestBody SetmealDTO setmealDTO){
 //        no setmealId
         log.info("zzy_log: update setmeal info: {}", setmealDTO);
